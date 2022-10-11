@@ -11,6 +11,26 @@ import { IDisposable } from '@lumino/disposable';
 import { ToolbarButton } from '@jupyterlab/apputils';
 import { YCodeCell } from '@jupyterlab/shared-models'; 
 
+// var deltaMap: {[id: string]: any[]} = {};
+
+// function startLog(widget: NotebookPanel){
+// 	var startTime = Date.now();
+
+// 	for (var cell of widget.content.widgets){
+// 		deltaMap[cell.model.id] = [];
+
+// 		const source = (cell.model.sharedModel as YCodeCell).ysource;
+
+// 		source.observe(event => {
+// 			var currentTime = Date.now();
+// 			const update = {time: currentTime-startTime, delta: event.changes};
+// 			deltaMap[cell.model.id].push(update);
+
+// 			cell.model.metadata.set('delta', deltaMap[cell.model.id]);
+// 		})
+// 	}
+// }
+
 class ButtonExtension implements DocumentRegistry.IWidgetExtension<NotebookPanel, INotebookModel>{
 	createNew(widget: NotebookPanel, context: DocumentRegistry.IContext<INotebookModel>): void | IDisposable {
 		function callback(){
@@ -20,16 +40,13 @@ class ButtonExtension implements DocumentRegistry.IWidgetExtension<NotebookPanel
 			for (var cell of widget.content.widgets){
 				deltaMap[cell.model.id] = [];
 
-				// cell.model.metadata.set('delta', []);
 				const source = (cell.model.sharedModel as YCodeCell).ysource;
         
 				source.observe(event => {
 					var currentTime = Date.now();
 					const update = {time: currentTime-startTime, delta: event.changes};
 					deltaMap[cell.model.id].push(update);
-					// console.log(currentTime-startTime);
-					// console.log(event.changes);
-					// console.log(source.toJSON());
+
 					cell.model.metadata.set('delta', deltaMap[cell.model.id]);
 				})
 
@@ -62,7 +79,12 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
 function activate(app: JupyterFrontEnd){
 	app.docRegistry.addWidgetExtension('Notebook', new ButtonExtension());
-
+	// setTimeout(()=>{
+	// 	const {shell} = app;
+	// 	const nbPanel = shell.currentWidget as NotebookPanel;
+	// 	console.log(nbPanel);
+	// 	startLog(nbPanel);
+	// }, 5000)
 }
 
 export default plugin;
